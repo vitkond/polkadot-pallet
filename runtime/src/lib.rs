@@ -224,5 +224,5 @@ mod runtime {
 
 	// Include the custom logic from the pallet-template in the runtime.
 	#[runtime::pallet_index(7)]
-	pub type Template = pallet_template;
+	pub type Notes = pallet_notes;
 }

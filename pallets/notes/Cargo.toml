@@ -1,5 +1,5 @@
 [package]
-name = "pallet-template"
+name = "pallet-notes"
 description = "FRAME pallet template for defining custom runtime logic."
 version = "0.1.0"
 license = "Unlicense"
@@ -29,7 +29,7 @@ default = ["std"]
 std = [
 	"codec/std",
 	"frame-benchmarking?/std",
-	"frame-support/std",f
+	"frame-support/std",
 	"frame-system/std",
 	"scale-info/std",
 ]
