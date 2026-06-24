@@ -1,4 +1,4 @@
-use crate::{mock::*, Error, NextNoteId, NoteCount, Notes as NotesStorage};
+use crate::{mock::*, Error, Event, NextNoteId, NoteCount, Notes as NotesStorage};
 use frame_support::{assert_noop, assert_ok};
 use codec::Encode;
 use frame_support::traits::OnRuntimeUpgrade;
@@ -103,5 +103,46 @@ fn migration_v0_to_v1_works() {
 
         assert_eq!(migrated_note.content, old_content);
         assert_eq!(migrated_note.created_at, None);
+    });
+}
+
+#[test]
+fn transfer_note_works() {
+    new_test_ext().execute_with(|| {
+        let owner = 1;
+        let recipient = 2;
+        let note_content = b"Hello, Substrate!".to_vec();
+        System::set_block_number(1);
+
+        assert_ok!(Notes::create_note(
+            RuntimeOrigin::signed(owner),
+            note_content.clone()
+        ));
+
+        assert_ok!(Notes::transfer_note(
+            RuntimeOrigin::signed(owner),
+            recipient,
+            0,
+        ));
+
+        let transferred_note = NotesStorage::<Test>::get(recipient, 0).unwrap();
+        assert_eq!(transferred_note.content, note_content);
+        assert_eq!(transferred_note.created_at, Some(1));
+
+        assert!(NotesStorage::<Test>::get(owner, 0).is_none());
+
+        assert_eq!(NoteCount::<Test>::get(owner), 0);
+        assert_eq!(NoteCount::<Test>::get(recipient), 1);
+        assert_eq!(NextNoteId::<Test>::get(recipient), 1);
+
+        System::assert_last_event(
+            Event::NoteTransferred {
+                from: owner,
+                to: recipient,
+                from_note_id: 0,
+                to_note_id: 0,
+            }
+                .into(),
+        );
     });
 }
